@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="86.0" height="104.4" viewBox="0 0 86.0 104.4"><rect width="100%" height="100%" fill="white"/><defs><style type="text/css"><![CDATA[
+@font-face {
+  font-family: 'Latin Modern Roman';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/gh/AndrewBelt/WiTeX@master/fonts/lmroman10-regular.woff") format("woff");
+}
+]]></style></defs><text x="63.25" y="27.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">1</text>
+<text x="48.10" y="48.60" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">+</text>
+<text x="63.25" y="48.60" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">2</text>
+<line x1="39.70" y1="58.60" x2="69.73" y2="58.60" stroke="#000000" stroke-width="1.75"/>
+<text x="63.25" y="71.40" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">3</text></svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="99.1" height="170.8" viewBox="0 0 99.1 170.8">
+<rect width="100%" height="100%" fill="white"/>
+<defs><style type="text/css"><![CDATA[
+@font-face {
+  font-family: 'Latin Modern Roman';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/gh/AndrewBelt/WiTeX@master/fonts/lmroman10-regular.woff") format("woff");
+}
+]]></style></defs>
+<text x="58.75" y="21.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">3</text>
+<text x="67.66" y="21.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">.</text>
+<text x="76.57" y="21.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">3</text>
+<line x1="71.17" y1="10.20" x2="81.97" y2="10.20" stroke="#000000" stroke-width="1.05" stroke-linecap="round"/>
+<text x="26.75" y="48.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">3</text>
+<text x="45.25" y="48.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">1</text>
+<text x="58.75" y="48.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">0</text>
+<text x="67.66" y="48.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">.</text>
+<text x="76.57" y="48.00" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">0</text>
+<path d="M 34.25 54.80 Q 41.25 41.20 38.77 35.60" fill="none" stroke="#000000" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="38.77" y1="35.60" x2="83.05" y2="35.60" stroke="#000000" stroke-width="1.75"/>
+<text x="58.75" y="69.60" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">9</text>
+<line x1="38.77" y1="79.60" x2="83.05" y2="79.60" stroke="#000000" stroke-width="1.75"/>
+<text x="58.75" y="92.40" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">1</text>
+<text x="76.57" y="92.40" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">0</text>
+<text x="76.57" y="112.80" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">9</text>
+<line x1="38.77" y1="122.80" x2="83.05" y2="122.80" stroke="#000000" stroke-width="1.75"/>
+<text x="76.57" y="135.60" text-anchor="middle" font-family="'Latin Modern Roman', 'Latin Modern', 'LM Roman 10', serif" font-size="20.0" fill="#000000" dominant-baseline="middle">1</text>
+</svg>
