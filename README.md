@@ -41,6 +41,8 @@ pip install -e .
 
 实现 OSS 时，请在上传请求中设置合适的 `Content-Type`（如 `image/svg+xml; charset=utf-8`），并保证返回的 URL 可被浏览器或 Confluence 等以 `<img src>` 方式加载（注意桶策略与 CORS）。
 
+**详细实现步骤（函数契约、公网 URL 模式、伪代码、排错）见：[docs/OSS_UPLOAD_GUIDE.md](docs/OSS_UPLOAD_GUIDE.md)。**
+
 ## 工具说明
 
 - **render_division_vertical**
