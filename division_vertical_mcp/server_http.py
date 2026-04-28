@@ -35,6 +35,7 @@ from .oss_store import mcp_svg_text_to_tool_output
 mcp = FastMCP(
     "division-vertical",
     host="0.0.0.0",
+    stateless_http=True,
     transport_security=TransportSecuritySettings(
         enable_dns_rebinding_protection=False,
     ),
