@@ -1,16 +1,16 @@
 """
-HTTP (Streamable HTTP) transport entry point for Railway deployment.
+HTTP transport entry point for Railway deployment.
 
-FastMCP v1.x Streamable HTTP transport:
-- MCP endpoint: POST/GET /mcp  (FastMCP default streamable_http_path="/mcp")
-- Health check: GET /health
-- PORT is injected by Railway via environment variable
+Exposes two endpoints for maximum client compatibility:
+- Streamable HTTP (new):  POST/GET /mcp
+- SSE (legacy):           GET /sse  +  POST /messages
 
-Local test:
-    PORT=8000 python -m division_vertical_mcp.server_http
+Health check: GET /health
+PORT is injected by Railway via environment variable.
 
-Cursor / Claude Code remote MCP connection URL:
-    https://<your-app>.up.railway.app/mcp
+Athena / Cursor MCP URL options:
+  Streamable: https://<app>.up.railway.app/mcp
+  SSE:        https://<app>.up.railway.app/sse
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ from .compose import (
 )
 from .oss_store import mcp_svg_text_to_tool_output
 
-# Re-create mcp with DNS rebinding protection disabled for public Railway deployment
+# DNS rebinding protection disabled — public Railway deployment
 mcp = FastMCP(
     "division-vertical",
     host="0.0.0.0",
@@ -48,9 +48,7 @@ def render_division_vertical(
     include_verification: bool = False,
     retain_decimal_places: int | None = None,
 ) -> str:
-    """
-    根据被除数、除数生成教材风格除法竖式图（网格对齐）。
-    """
+    """根据被除数、除数生成教材风格除法竖式图（网格对齐）。"""
     return mcp_svg_text_to_tool_output(
         build_combined_svg(
             dividend,
@@ -113,16 +111,21 @@ def health(request: Request) -> JSONResponse:
     return JSONResponse({"status": "ok"})
 
 
-_mcp_asgi = mcp.streamable_http_app()
+# Build both ASGI apps
+_streamable_app = mcp.streamable_http_app()
+_sse_app = mcp.sse_app()
 
 
 async def app(scope, receive, send):
     if scope["type"] == "http" and scope["path"] == "/health":
-        req = Request(scope, receive)
-        resp = health(req)
+        resp = health(Request(scope, receive))
         await resp(scope, receive, send)
+    elif scope["type"] == "http" and scope["path"].startswith("/sse"):
+        await _sse_app(scope, receive, send)
+    elif scope["type"] == "http" and scope["path"].startswith("/messages"):
+        await _sse_app(scope, receive, send)
     else:
-        await _mcp_asgi(scope, receive, send)
+        await _streamable_app(scope, receive, send)
 
 
 def main() -> None:
