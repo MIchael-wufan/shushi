@@ -71,7 +71,7 @@ def format_svg_oss_img_html(public_url: str, *, width_px: int | None = None) -> 
         .replace("<", "&lt;")
         .replace(">", "&gt;")
     )
-    return f'<br><img src="{safe}" width="{w}px"><br>'
+    return f'<br><img src="{safe}"><br>'
 
 
 def _default_object_key() -> str:
