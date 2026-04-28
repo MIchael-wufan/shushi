@@ -44,3 +44,6 @@ htmlcov/
 .env
 .env.*
 !.env.example
+
+# 批量上传 OSS 生成的 URL 列表（可本地保留）
+test-3/oss_urls.txt

@@ -32,14 +32,25 @@ pip install -e .
 
 | 值 | 行为 |
 |----|------|
-| `oss_img`（**默认**） | 将 SVG 上传至公司 OSS 后，返回可嵌入的 HTML 片段：`<br><img src="公网URL" width="Npx"><br>`。需在本仓库内实现 `division_vertical_mcp/oss_store.py` 中的 `upload_svg_get_public_url`；未实现前会抛 `NotImplementedError`，开发环境可设 `raw_svg`。 |
+| `oss_img`（**默认**） | 将 SVG 上传至阿里云 OSS 后，返回可嵌入的 HTML 片段：`<br><img src="公网URL" width="Npx"><br>`。 |
+| `oss_url` | 上传至 OSS 后，仅返回公网 URL 字符串（无 `<img>`）。 |
 | `raw_svg` | 返回完整 UTF-8 SVG 文本（与早期仅返回 SVG 的行为一致）。 |
 
 可选环境变量：
 
 - `DIVISION_VERTICAL_MCP_SVG_IMG_WIDTH`：上述 `<img>` 的 `width` 数值部分，默认 `120`（即 `120px`）。
 
-实现 OSS 时，请在上传请求中设置合适的 `Content-Type`（如 `image/svg+xml; charset=utf-8`），并保证返回的 URL 可被浏览器或 Confluence 等以 `<img src>` 方式加载（注意桶策略与 CORS）。
+**阿里云 OSS（`oss_img` / `oss_url` 必填）**：可通过环境变量注入；或在项目根目录放置 **`.env`**（已被 `.gitignore` 忽略），启动时会自动加载，`python-dotenv` 已作为依赖安装。**勿将含密钥的 `.env` 提交到仓库。** 下列名称亦可使用无前缀别名 `OSS_ACCESS_KEY_ID`、`OSS_ENDPOINT` 等。
+
+| 变量 | 说明 |
+|------|------|
+| `DIVISION_VERTICAL_OSS_ACCESS_KEY_ID` | AccessKey Id |
+| `DIVISION_VERTICAL_OSS_ACCESS_KEY_SECRET` | AccessKey Secret |
+| `DIVISION_VERTICAL_OSS_ENDPOINT` | SDK 连接地址，例如内网 `http://oss-cn-beijing-internal.aliyuncs.com` |
+| `DIVISION_VERTICAL_OSS_BUCKET` | 桶名，例如 `apolo-image-test` |
+| `DIVISION_VERTICAL_OSS_PUBLIC_BASE_URL` | 返回给客户端的公网基址（无尾部 `/` 亦可），例如 `http://apolo-image-test.oss-cn-beijing.aliyuncs.com` |
+
+上传时使用 UTF-8 与 `Content-Type: image/svg+xml; charset=utf-8`。请确认桶或对象为**公共读**（或配合 CDN），以便 `<img src>` 可匿名 GET（详见 [docs/OSS_UPLOAD_GUIDE.md](docs/OSS_UPLOAD_GUIDE.md)）。
 
 **详细实现步骤（函数契约、公网 URL 模式、伪代码、排错）见：[docs/OSS_UPLOAD_GUIDE.md](docs/OSS_UPLOAD_GUIDE.md)。**
 

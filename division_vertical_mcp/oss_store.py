@@ -1,24 +1,42 @@
 """
 公司 OSS 上传与 MCP 结果封装。
 
-`upload_svg_get_public_url` 由你方在部署时接入贵司对象存储后实现。默认输出为上传后的 HTML 片段；
-若仅需 SVG 文本，可设置环境变量 ``DIVISION_VERTICAL_MCP_SVG_OUTPUT_MODE=raw_svg``。
+阿里云 OSS：配置环境变量后 ``upload_svg_get_public_url`` 会上传 SVG 并返回公网 URL。
+默认 MCP 输出为含 ``<img>`` 的 HTML；亦可 ``raw_svg`` 或 ``oss_url``（仅 URL）。
 """
 from __future__ import annotations
 
 import os
 import uuid
+from pathlib import Path
 from typing import Final
+from urllib.parse import quote
+
+import oss2
+from dotenv import load_dotenv
+
+# 从项目根目录加载 .env（文件已在 .gitignore，勿把密钥提交到 Git）
+_root = Path(__file__).resolve().parent.parent
+load_dotenv(_root / ".env")
 
 # ---------------------------------------------------------------------------
 # 环境变量（与 server 共用约定）
 # ---------------------------------------------------------------------------
 # 可选值，大小写不敏感:
 #   oss_img    — 默认。将 SVG 上传至 OSS 后，返回可嵌入的 HTML 片段（见 `format_svg_oss_img_html`）
+#   oss_url    — 上传后仅返回公网 URL 字符串（无 <img>）
 #   raw_svg    — 工具直接返回 UTF-8 完整 SVG 字符串
 ENV_SVG_OUTPUT_MODE: Final = "DIVISION_VERTICAL_MCP_SVG_OUTPUT_MODE"
 # img 标签的 width，默认 120；单位在 HTML 中写为「120px」
 ENV_SVG_IMG_WIDTH: Final = "DIVISION_VERTICAL_MCP_SVG_IMG_WIDTH"
+
+# 阿里云 OSS（与 README / docs/OSS_UPLOAD_GUIDE.md 一致；密钥勿写入仓库）
+ENV_OSS_ACCESS_KEY_ID: Final = "DIVISION_VERTICAL_OSS_ACCESS_KEY_ID"
+ENV_OSS_ACCESS_KEY_SECRET: Final = "DIVISION_VERTICAL_OSS_ACCESS_KEY_SECRET"
+ENV_OSS_ENDPOINT: Final = "DIVISION_VERTICAL_OSS_ENDPOINT"
+ENV_OSS_BUCKET: Final = "DIVISION_VERTICAL_OSS_BUCKET"
+# 浏览器 / <img> 使用的公网基址，无尾部斜杠亦可，例如 https://bucket.oss-cn-beijing.aliyuncs.com
+ENV_OSS_PUBLIC_BASE_URL: Final = "DIVISION_VERTICAL_OSS_PUBLIC_BASE_URL"
 
 
 def get_svg_output_mode() -> str:
@@ -61,44 +79,71 @@ def _default_object_key() -> str:
     return f"division-vertical-mcp/{uuid.uuid4().hex}.svg"
 
 
-# ---------------------------------------------------------------------------
-# 部署时请在本函数中接入贵司 OSS（需实现）
-# ---------------------------------------------------------------------------
+def _env_first(*names: str) -> str | None:
+    for name in names:
+        v = os.environ.get(name)
+        if v is not None and str(v).strip():
+            return str(v).strip()
+    return None
+
+
+def _oss_public_url(public_base: str, object_key: str) -> str:
+    base = public_base.rstrip("/")
+    # 保留路径分隔符，对其余需编码的字符做百分号编码
+    path = quote(object_key, safe="/")
+    return f"{base}/{path}"
+
+
 def upload_svg_get_public_url(
     svg_text: str, *, object_key: str | None = None, content_type: str = "image/svg+xml"
 ) -> str:
     """
-    将 **UTF-8 完整 SVG 文档** 上传到公司 OSS，返回**公网可直接 GET** 的 URL
-   （浏览器或 ``<img>`` 可加载）。
+    将 **UTF-8 完整 SVG 文档** 上传阿里云 OSS，返回**公网可直接 GET** 的 URL。
 
-    参数
-    ----
-    svg_text
-        要上传的 SVG 源文本（建议含 ``<svg>`` 根元素）。
-    object_key
-        对象键/路径；默认 ``_default_object_key()``，以免覆盖。
-    content_type
-        建议 ``image/svg+xml`` 或带 ``charset=utf-8``。
+    需在环境中配置（也可用无前缀 ``OSS_*`` 同名变量）：
 
-    返回
-    ----
-    以 ``http://`` 或 ``https://`` 开头的资源 URL 字符串；供 ``format_svg_oss_img_html`` 使用。
-
-    未实现
-    ------
-    当前默认 **抛出** ``NotImplementedError``。在 ``DIVISION_VERTICAL_MCP_SVG_OUTPUT_MODE=oss_img`` 时，
-    必须在部署环境实现本函数，或将输出模式设回 ``raw_svg``。
-
-    实现提示
-    --------
-    常见：阿里云 OSS、华为 OBS、MinIO、AWS S3、自研网关等。上传后返回带签名或
-    公开读桶的**稳定 URL**；注意跨域 CORS 若需前端直接 <img> 使用。
+    - ``DIVISION_VERTICAL_OSS_ACCESS_KEY_ID`` / ``OSS_ACCESS_KEY_ID``
+    - ``DIVISION_VERTICAL_OSS_ACCESS_KEY_SECRET`` / ``OSS_ACCESS_KEY_SECRET``
+    - ``DIVISION_VERTICAL_OSS_ENDPOINT`` / ``OSS_ENDPOINT`` — SDK 访问地址（内网 ECS 可用 internal endpoint）
+    - ``DIVISION_VERTICAL_OSS_BUCKET`` / ``OSS_BUCKET``
+    - ``DIVISION_VERTICAL_OSS_PUBLIC_BASE_URL`` / ``OSS_PUBLIC_BASE_URL`` — 返回给前端的公网基址，例如
+      ``https://apolo-image-test.oss-cn-beijing.aliyuncs.com``
     """
-    raise NotImplementedError(
-        "在 division_vertical_mcp.oss_store.upload_svg_get_public_url 中接入公司 OSS 后，"
-        "本函数应返回可访问的 SVG 资源 URL；"
-        f"或设置 {ENV_SVG_OUTPUT_MODE}=raw_svg 不走上传。"
-    )
+    if object_key is None:
+        object_key = _default_object_key()
+
+    access_key_id = _env_first(ENV_OSS_ACCESS_KEY_ID, "OSS_ACCESS_KEY_ID")
+    access_key_secret = _env_first(ENV_OSS_ACCESS_KEY_SECRET, "OSS_ACCESS_KEY_SECRET")
+    endpoint = _env_first(ENV_OSS_ENDPOINT, "OSS_ENDPOINT")
+    bucket_name = _env_first(ENV_OSS_BUCKET, "OSS_BUCKET")
+    public_base = _env_first(ENV_OSS_PUBLIC_BASE_URL, "OSS_PUBLIC_BASE_URL")
+
+    required = {
+        "access_key_id": access_key_id,
+        "access_key_secret": access_key_secret,
+        "endpoint": endpoint,
+        "bucket": bucket_name,
+        "public_base": public_base,
+    }
+    missing = [k for k, v in required.items() if not v]
+    if missing:
+        raise OSError(
+            "阿里云 OSS 环境变量不完整（缺少: "
+            + ", ".join(missing)
+            + "）。请设置 DIVISION_VERTICAL_OSS_* 或 OSS_*；"
+            f"或设置 {ENV_SVG_OUTPUT_MODE}=raw_svg 跳过上传。"
+        )
+
+    ct = content_type
+    if "charset" not in ct.lower():
+        ct = f"{content_type}; charset=utf-8"
+
+    auth = oss2.Auth(access_key_id, access_key_secret)
+    bucket = oss2.Bucket(auth, endpoint, bucket_name)
+    body = svg_text.encode("utf-8")
+    bucket.put_object(object_key, body, headers={"Content-Type": ct})
+
+    return _oss_public_url(public_base, object_key)
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +155,7 @@ def mcp_svg_text_to_tool_output(svg: str) -> str:
 
     - ``raw_svg``：原样返回 ``svg``。
     - ``oss_img``：调用 ``upload_svg_get_public_url`` 后，返回 ``format_svg_oss_img_html``。
+    - ``oss_url``：上传后仅返回公网 URL 字符串。
     """
     mode = get_svg_output_mode()
     if mode in ("raw_svg", "raw", "svg"):
@@ -122,9 +168,17 @@ def mcp_svg_text_to_tool_output(svg: str) -> str:
                 f"upload_svg_get_public_url 应返回以 http:// 或 https:// 开头的 URL，收到: {url!r}"
             )
         return format_svg_oss_img_html(url)
+    if mode in ("oss_url", "url"):
+        key = _default_object_key()
+        url = upload_svg_get_public_url(svg, object_key=key)
+        if not _looks_like_url(url):
+            raise ValueError(
+                f"upload_svg_get_public_url 应返回以 http:// 或 https:// 开头的 URL，收到: {url!r}"
+            )
+        return url
     raise ValueError(
         f"未知 {ENV_SVG_OUTPUT_MODE}={mode!r}；"
-        f"请使用 raw_svg 或 oss_img（或简写 raw/oss/img）"
+        f"请使用 raw_svg、oss_img 或 oss_url（简写 raw / oss_url）"
     )
 
 
