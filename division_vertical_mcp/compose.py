@@ -736,7 +736,7 @@ def build_combined_svg(
     # 主竖式底 →「验算：」所在行顶：20px；「验算：」与下方乘法竖式之间另留小间距
     gap_div_to_verify_label = 20.0
     label_gap_to_mul = 8.0
-    label_fs = st0.font_size + 2.0
+    label_fs = (st0.font_size + 2.0) * 0.75
     label_line_h = label_fs * 1.22
     total_w = max(div_ox + div_w, mul_ox + mw)
     label_y = h1 + gap_div_to_verify_label
@@ -833,7 +833,7 @@ def _stack_main_and_verification_svgs(
     gap_label = 20.0
     label_gap_to_block = 8.0
     between_blocks = 14.0
-    label_fs = st0.font_size + 2.0
+    label_fs = (st0.font_size + 2.0) * 0.75
     label_line_h = label_fs * 1.22
     bottom_pad = 12.0
     ff = st0.font_family.replace("&", "&amp;").replace('"', "&quot;")
