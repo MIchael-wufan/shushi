@@ -98,11 +98,33 @@ def long_division_layout(dividend: int, divisor: int) -> LongDivisionLayout:
             i += 1
             if rem >= divisor:
                 break
-            quotient_slots.append((i - 1, "0"))
+            if i < n:
+                # 中间补位 0，正常追加商 0 槽位
+                quotient_slots.append((i - 1, "0"))
+            else:
+                # 最后一位且 rem < divisor：整除时追加商 0（后续由 rem==0 判断 break），非零余数不追加（由下面 step 统一处理）
+                if rem == 0:
+                    quotient_slots.append((i - 1, "0"))
 
         if rem == 0 and i >= n:
             break
-        if i >= n and rem < divisor:  # 数位耗尽且不够再除，rem 为最终余数，无需再商一位
+        if i >= n and rem < divisor:
+            # 非零余数且数位耗尽：补一个 q=0 的 step，记录"落最后一位"的竖式步骤
+            end_col = i - 1
+            psc = end_col - (len(str(rem)) - 1)
+            if psc < 0:
+                psc = 0
+            steps.append(
+                DivisionStep(
+                    partial=rem,
+                    quotient_digit="0",
+                    product=0,
+                    partial_start_col=psc,
+                    partial_end_col=end_col,
+                    remainder_after=rem,
+                )
+            )
+            quotient_slots.append((end_col, "0"))
             break
 
     qraw = "".join(d for _, d in quotient_slots)
