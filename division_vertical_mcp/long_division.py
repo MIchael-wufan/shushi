@@ -102,6 +102,8 @@ def long_division_layout(dividend: int, divisor: int) -> LongDivisionLayout:
 
         if rem == 0 and i >= n:
             break
+        if i >= n and rem < divisor:  # 数位耗尽且不够再除，rem 为最终余数，无需再商一位
+            break
 
     qraw = "".join(d for _, d in quotient_slots)
     if int(qraw) != dividend // divisor or rem != dividend % divisor:
